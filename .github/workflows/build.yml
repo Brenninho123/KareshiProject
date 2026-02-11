@@ -1,0 +1,33 @@
+name: Build Windows
+
+on: workflow_dispatch: push: branches: [ main ]
+
+jobs: build-windows: runs-on: windows-2022
+
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
+
+  - name: Setup Haxe
+    uses: krdlab/setup-haxe@v1
+    with:
+      haxe-version: 4.2.5
+
+  - name: Install libraries
+    run: |
+      haxelib setup C:\haxelib
+      haxelib install lime
+      haxelib install openfl
+      haxelib install flixel
+      haxelib install flixel-addons
+      haxelib install flixel-ui
+
+  - name: Build Windows
+    run: |
+      haxelib run lime build windows -release
+
+  - name: Upload artifact
+    uses: actions/upload-artifact@v4
+    with:
+      name: KareshiProject-Windows
+      path: export/release/windows/bin
