@@ -8,15 +8,12 @@ override public function create():Void
 {
     super.create();
 
-    // Background color
     FlxG.camera.bgColor = FlxColor.BLACK;
 
-    // Player setup
     player = new FlxSprite(FlxG.width / 2 - 8, FlxG.height - 60);
     player.makeGraphic(16, 16, FlxColor.WHITE);
     add(player);
 
-    // Bullet group
     bullets = new FlxGroup();
     add(bullets);
 }
@@ -32,11 +29,7 @@ override public function update(elapsed:Float):Void
 
 function handleMovement():Void
 {
-    var speed:Float = 200;
-
-    // Focus mode (slow movement)
-    if (FlxG.keys.pressed.SHIFT)
-        speed = 100;
+    var speed:Float = FlxG.keys.pressed.SHIFT ? 100 : 200;
 
     player.velocity.set(0, 0);
 
@@ -45,7 +38,6 @@ function handleMovement():Void
     if (FlxG.keys.pressed.UP)    player.velocity.y = -speed;
     if (FlxG.keys.pressed.DOWN)  player.velocity.y = speed;
 
-    // Keep player on screen
     player.x = FlxMath.bound(player.x, 0, FlxG.width - player.width);
     player.y = FlxMath.bound(player.y, 0, FlxG.height - player.height);
 }
@@ -63,15 +55,15 @@ function spawnBullet():Void
     var bullet = new FlxSprite(player.x + player.width / 2 - 2, player.y - 8);
     bullet.makeGraphic(4, 8, FlxColor.CYAN);
     bullet.velocity.y = -400;
-
     bullets.add(bullet);
 }
 
 function cleanupBullets():Void
 {
-    for (bullet in bullets.members)
+    for (b in bullets.members)
     {
-        if (bullet != null && bullet.y < -10)
+        var bullet:FlxSprite = cast b;
+        if (bullet != null && bullet.exists && bullet.y < -10)
         {
             bullet.kill();
         }
