@@ -32,8 +32,19 @@ jobs:
       - name: Lime setup
         run: haxelib run lime setup
 
-      - name: Build Windows (Release)
-        run: haxelib run lime build windows -release
+      - name: Build Windows
+        run: haxelib run lime build windows
+
+      - name: List export directory
+        shell: pwsh
+        run: |
+          Write-Host "Listing export directory structure:"
+          if (Test-Path export) {
+            Get-ChildItem -Path export -Recurse | Select-Object FullName
+          } else {
+            Write-Host "Export directory does not exist!"
+            Get-ChildItem -Path . -Directory
+          }
 
       - name: Find EXE
         shell: pwsh
