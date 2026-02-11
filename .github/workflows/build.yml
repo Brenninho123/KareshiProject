@@ -1,51 +1,56 @@
 name: Build Windows
 
-on: workflow_dispatch: push: branches: [ main ]
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
 
-jobs: build-windows: runs-on: windows-latest
+jobs:
+  build-windows:
+    runs-on: windows-latest
 
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Setup Haxe
-    uses: krdlab/setup-haxe@v1
-    with:
-      haxe-version: 4.2.5
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.2.5
 
-  - name: Setup haxelib
-    run: haxelib setup C:\haxelib
+      - name: Setup haxelib
+        run: haxelib setup C:\haxelib
 
-  - name: Install libraries
-    run: |
-      haxelib install lime --quiet
-      haxelib install openfl --quiet
-      haxelib install flixel --quiet
-      haxelib install flixel-addons --quiet
-      haxelib install flixel-ui --quiet
+      - name: Install libraries
+        run: |
+          haxelib install lime --quiet
+          haxelib install openfl --quiet
+          haxelib install flixel --quiet
+          haxelib install flixel-addons --quiet
+          haxelib install flixel-ui --quiet
 
-  - name: Lime setup
-    run: haxelib run lime setup
+      - name: Lime setup
+        run: haxelib run lime setup
 
-  - name: Build Windows (Release)
-    run: haxelib run lime build windows -release
+      - name: Build Windows (Release)
+        run: haxelib run lime build windows -release
 
-  - name: Find EXE
-    shell: pwsh
-    run: |
-      $exe = Get-ChildItem -Path export -Recurse -Filter *.exe | Select-Object -First 1
-      if (-not $exe) { throw "EXE not found" }
-      echo "EXE_PATH=$($exe.FullName)" >> $env:GITHUB_ENV
+      - name: Find EXE
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path export -Recurse -Filter *.exe | Select-Object -First 1
+          if (-not $exe) { throw "EXE not found" }
+          echo "EXE_PATH=$($exe.FullName)" >> $env:GITHUB_ENV
 
-  - name: Zip build
-    shell: pwsh
-    run: |
-      $zipPath = "KareshiProject-Windows.zip"
-      Compress-Archive -Path (Split-Path $env:EXE_PATH)\* -DestinationPath $zipPath
-      echo "ZIP_PATH=$zipPath" >> $env:GITHUB_ENV
+      - name: Zip build
+        shell: pwsh
+        run: |
+          $zipPath = "KareshiProject-Windows.zip"
+          Compress-Archive -Path (Split-Path $env:EXE_PATH)\* -DestinationPath $zipPath
+          echo "ZIP_PATH=$zipPath" >> $env:GITHUB_ENV
 
-  - name: Upload Windows ZIP
-    uses: actions/upload-artifact@v4
-    with:
-      name: KareshiProject-Windows
-      path: ${{ env.ZIP_PATH }}
+      - name: Upload Windows ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: KareshiProject-Windows
+          path: ${{ env.ZIP_PATH }}
