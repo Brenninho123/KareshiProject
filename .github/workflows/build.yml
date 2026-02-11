@@ -27,13 +27,10 @@ steps:
   - name: Lime setup
     run: haxelib run lime setup
 
-  - name: Build Windows
+  - name: Build Windows (Release)
     run: haxelib run lime build windows -release
 
-  - name: List build output
-    run: dir export /s
-
-  - name: Upload artifact
+  - name: Upload Windows build
     uses: actions/upload-artifact@v4
     with:
       name: KareshiProject-Windows
