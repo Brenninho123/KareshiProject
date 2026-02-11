@@ -1,6 +1,6 @@
 package;
 
-import flixel.FlxState; import flixel.FlxG; import flixel.FlxSprite; import flixel.group.FlxGroup; import flixel.util.FlxColor; import flixel.FlxObject; import flixel.input.keyboard.FlxKeyboard;
+import flixel.FlxState; import flixel.FlxG; import flixel.FlxSprite; import flixel.group.FlxGroup; import flixel.util.FlxColor; import flixel.math.FlxMath;
 
 class PlayState extends FlxState { var player:FlxSprite; var bullets:FlxGroup;
 
@@ -25,11 +25,12 @@ override public function update(elapsed:Float):Void
 {
     super.update(elapsed);
 
-    handleMovement(elapsed);
+    handleMovement();
     handleShooting();
+    cleanupBullets();
 }
 
-function handleMovement(elapsed:Float):Void
+function handleMovement():Void
 {
     var speed:Float = 200;
 
@@ -64,6 +65,17 @@ function spawnBullet():Void
     bullet.velocity.y = -400;
 
     bullets.add(bullet);
+}
+
+function cleanupBullets():Void
+{
+    for (bullet in bullets.members)
+    {
+        if (bullet != null && bullet.y < -10)
+        {
+            bullet.kill();
+        }
+    }
 }
 
 }
