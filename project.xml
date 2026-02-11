@@ -2,7 +2,8 @@
     <!-- ========================= -->
     <!-- BASIC PROJECT INFORMATION -->
     <!-- ========================= -->
-    <meta title="Kareshi Project" package="com.brenninho.kareshi" version="1.0.0" company="Brenninho" /><!-- Target FPS -->
+    <meta title="Kareshi Project" package="com.brenninho.kareshi" version="1.0.0" company="Brenninho" />
+    <icon path="arts/icon.png" /><!-- Target FPS -->
 <window width="1280" height="720" fps="60" background="#000000" />
 
 <!-- ========================= -->
