@@ -1,7 +1,4 @@
 -main ApplicationMain 
---macro keep('IntIterator')
--cp C:/HaxeToolkit/haxe/lib/hscript/2,7,0
--D hscript=2.7.0
 -cp C:/HaxeToolkit/haxe/lib/flixel-addons/4,0,1
 -D flixel-addons=4.0.1
 -cp C:/HaxeToolkit/haxe/lib/flixel/6,1,2
