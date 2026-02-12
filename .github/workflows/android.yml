@@ -1,67 +1,95 @@
 name: Build Android
 
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+on: workflow_dispatch: push: branches: [ main ]
 
-jobs:
-  build-android:
-    runs-on: ubuntu-latest
+jobs: build-android: runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+  - name: Setup Haxe
+    uses: krdlab/setup-haxe@v1
+    with:
+      haxe-version: 4.2.5
 
-      - name: Install Android SDK + NDK
-        uses: android-actions/setup-android@v3
-        with:
-          api-level: 33
-          ndk: 21.4.7075529
+  - name: Setup Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: 17
 
-      - name: Setup haxelib
-        run: |
-          mkdir -p ~/haxelib
-          haxelib setup ~/haxelib
+  - name: Setup Android SDK
+    uses: android-actions/setup-android@v3
 
-      - name: Install libraries
-        run: |
-          haxelib install lime --quiet
-          haxelib install openfl --quiet
-          haxelib install hxcpp --quiet
-          haxelib install flixel --quiet
-          haxelib install flixel-addons --quiet
-          haxelib install flixel-ui --quiet
+  - name: Setup haxelib
+    run: |
+      mkdir -p ~/haxelib
+      haxelib setup ~/haxelib
 
-      - name: Setup Android for Lime
-        shell: bash
-        run: |
-          export ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
-          export ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT
-          haxelib run lime setup android -- --sdk $ANDROID_SDK_ROOT --ndk $ANDROID_NDK_ROOT --java $JAVA_HOME
+  - name: Install libraries
+    run: |
+      haxelib install lime --quiet
+      haxelib install openfl --quiet
+      haxelib install hxcpp --quiet
+      haxelib install flixel --quiet
+      haxelib install flixel-addons --quiet
+      haxelib install flixel-ui --quiet
 
-      - name: Build Android (.apk release)
-        run: |
-          haxelib run lime build android -release
+  - name: Decode keystore
+    run: |
+      echo "$KEYSTORE_BASE64" | base64 --decode > kareshi.keystore
+    env:
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
-      - name: Find APK
-        shell: bash
-        run: |
-          APK=$(find export -type f -name "*.apk" | head -n 1)
-          if [ -z "$APK" ]; then
-            echo "⚠️ APK not found!"
-            exit 1
-          fi
-          echo "APK_PATH=$APK" >> $GITHUB_ENV
+  - name: Lime setup Android
+    run: haxelib run lime setup android
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: KareshiProject-Android
-          path: ${{ env.APK_PATH }}
+  - name: Build Android APK (release signed)
+    run: |
+      haxelib run lime build android -release \
+        -D KEYSTORE=kareshi.keystore \
+        -D KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
+        -D KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
+        -D KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
+
+  - name: Build Android AAB (Play Store)
+    run: |
+      haxelib run lime build android -release -aab \
+        -D KEYSTORE=kareshi.keystore \
+        -D KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
+        -D KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
+        -D KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
+
+  - name: List export folder
+    run: find export -type f || true
+
+  - name: Find APK
+    run: |
+      APK=$(find export -type f -name "*.apk" | head -n 1)
+      if [ -z "$APK" ]; then
+        echo "APK not found" >&2
+        exit 1
+      fi
+      echo "APK_PATH=$APK" >> $GITHUB_ENV
+
+  - name: Find AAB
+    run: |
+      AAB=$(find export -type f -name "*.aab" | head -n 1)
+      if [ -z "$AAB" ]; then
+        echo "AAB not found" >&2
+        exit 1
+      fi
+      echo "AAB_PATH=$AAB" >> $GITHUB_ENV
+
+  - name: Upload APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: KareshiProject-APK
+      path: ${{ env.APK_PATH }}
+
+  - name: Upload AAB
+    uses: actions/upload-artifact@v4
+    with:
+      name: KareshiProject-AAB
+      path: ${{ env.AAB_PATH }}
