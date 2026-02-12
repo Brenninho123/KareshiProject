@@ -1,36 +1,70 @@
-<?xml version="1.0" encoding="utf-8"?><project>
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+
     <!-- ========================= -->
     <!-- BASIC PROJECT INFORMATION -->
     <!-- ========================= -->
-    <meta title="Kareshi Project" package="com.brenninho.kareshi" version="1.0.0" company="Brenninho" />
-    <icon path="arts/icon.png" /><!-- Target FPS -->
-<window width="1280" height="720" fps="60" background="#000000" />
+    <meta
+        title="Kareshi Project"
+        package="com.brenninho.kareshi"
+        version="1.0.0"
+        company="Brenninho"
+    />
 
-<!-- ========================= -->
-<!-- HAXE / OPENFL / FLIXEL   -->
-<!-- ========================= -->
-<haxelib name="openfl" />
-<haxelib name="lime" />
-<haxelib name="flixel" />
-<haxelib name="flixel-addons" />
-<haxelib name="flixel-ui" />
+    <icon path="arts/icon.png" />
 
-<!-- ========================= -->
-<!-- SOURCE DIRECTORY          -->
-<!-- ========================= -->
-<source path="source" />
+    <!-- ========================= -->
+    <!-- WINDOW / FPS              -->
+    <!-- ========================= -->
+    <window
+        width="1280"
+        height="720"
+        fps="60"
+        background="#000000"
+        orientation="landscape"
+        resizable="true"
+    />
 
-<!-- ========================= -->
-<!-- TARGET SETTINGS           -->
-<!-- ========================= -->
+    <!-- ========================= -->
+    <!-- HAXE / OPENFL / FLIXEL    -->
+    <!-- ========================= -->
+    <haxelib name="lime" />
+    <haxelib name="openfl" />
+    <haxelib name="flixel" />
+    <haxelib name="flixel-addons" />
+    <haxelib name="flixel-ui" />
 
-<!-- Desktop -->
-<config:windows if="windows" />
-<config:mac if="mac" />
-<config:linux if="linux" />
+    <!-- ========================= -->
+    <!-- SOURCE DIRECTORY          -->
+    <!-- ========================= -->
+    <source path="source" />
 
-<!-- Mobile -->
-<config:android if="android" />
-<config:ios if="ios" />
+    <!-- ========================= -->
+    <!-- DESKTOP CONFIG            -->
+    <!-- ========================= -->
+    <config:windows if="windows" />
+    <config:mac if="mac" />
+    <config:linux if="linux" />
+
+    <!-- ========================= -->
+    <!-- ANDROID CONFIG            -->
+    <!-- ========================= -->
+    <config:android
+        if="android"
+        minSdkVersion="21"
+        targetSdkVersion="34"
+        installLocation="auto"
+        permission.INTERNET="true"
+        permission.WRITE_EXTERNAL_STORAGE="true"
+    />
+
+    <!-- Landscape forced on Android -->
+    <set name="android.orientation" value="landscape" if="android" />
+
+    <!-- Enable hardware acceleration -->
+    <set name="android.hardwareAcceleration" value="true" if="android" />
+
+    <!-- Use Gradle -->
+    <set name="android.gradle" value="true" if="android" />
 
 </project>
