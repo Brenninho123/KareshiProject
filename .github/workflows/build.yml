@@ -1,51 +1,66 @@
 name: Build Windows
 
-on: workflow_dispatch: push: branches: [ main ]
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
-jobs: build-windows: runs-on: windows-latest
+jobs:
+  build-windows:
+    runs-on: windows-latest
 
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Setup Haxe
-    uses: krdlab/setup-haxe@v1
-    with:
-      haxe-version: 4.2.5
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: '4.2.5'
 
-  - name: Setup haxelib
-    run: haxelib setup C:\haxelib
+      - name: Setup haxelib
+        run: haxelib setup C:\\haxelib
 
-  - name: Install libraries
-    run: |
-      haxelib install lime --quiet
-      haxelib install openfl --quiet
-      haxelib install flixel --quiet
-      haxelib install flixel-addons --quiet
-      haxelib install flixel-ui --quiet
+      - name: Install libraries
+        run: |
+          haxelib install lime --quiet
+          haxelib install openfl --quiet
+          haxelib install flixel --quiet
+          haxelib install flixel-addons --quiet
+          haxelib install flixel-ui --quiet
 
-  - name: Lime setup
-    run: haxelib run lime setup
+      - name: Lime setup
+        run: haxelib run lime setup
 
-  - name: Build Windows (Release)
-    run: haxelib run lime build windows -release
+      - name: Build Windows (Release)
+        run: haxelib run lime build windows -release
 
-  - name: Find EXE and create ZIP
-    shell: pwsh
-    run: |
-      $exe = Get-ChildItem -Path export -Recurse -Filter *.exe | Select-Object -First 1
-      if (-not $exe) { throw "EXE not found" }
+      - name: List export directory
+        shell: pwsh
+        run: |
+          Write-Host "Contents of export folder:"
+          Get-ChildItem -Path export -Recurse | Sort-Object FullName
 
-      $date = Get-Date -Format "yyyy-MM-dd"
-      $zipName = "KareshiProject-Windows-$date.zip"
+      - name: Find EXE and zip
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path export -Recurse -Filter *.exe | Select-Object -First 1
+          if (-not $exe) {
+              Write-Error "No EXE found in export folder"
+              exit 1
+          }
+          Write-Host "Found EXE at: $($exe.FullName)"
 
-      $folder = Split-Path $exe.FullName
-      Compress-Archive -Path "$folder\*" -DestinationPath $zipName
+          $date = Get-Date -Format "yyyy-MM-dd"
+          $zipName = "KareshiProject-Windows-$date.zip"
 
-      echo "ZIP_NAME=$zipName" >> $env:GITHUB_ENV
+          Write-Host "Zipping files from: $($exe.DirectoryName)"
+          Compress-Archive -Path "$($exe.DirectoryName)\\*" -DestinationPath $zipName
 
-  - name: Upload Windows ZIP
-    uses: actions/upload-artifact@v4
-    with:
-      name: KareshiProject-Windows
-      path: ${{ env.ZIP_NAME }}
+          echo "ZIP_PATH=$zipName" >> $env:GITHUB_ENV
+
+      - name: Upload Windows ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: KareshiProject-Windows
+          path: ${{ env.ZIP_PATH }}
