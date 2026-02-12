@@ -30,27 +30,22 @@ steps:
   - name: Build Windows (Release)
     run: haxelib run lime build windows -release
 
-  - name: Find EXE
+  - name: Find EXE and create ZIP
     shell: pwsh
     run: |
       $exe = Get-ChildItem -Path export -Recurse -Filter *.exe | Select-Object -First 1
       if (-not $exe) { throw "EXE not found" }
-      echo "EXE_PATH=$($exe.FullName)" >> $env:GITHUB_ENV
 
-  - name: Generate versioned ZIP name
-    shell: pwsh
-    run: |
       $date = Get-Date -Format "yyyy-MM-dd"
       $zipName = "KareshiProject-Windows-$date.zip"
-      echo "ZIP_NAME=$zipName" >> $env:GITHUB_ENV
 
-  - name: Zip build
-    shell: pwsh
-    run: |
-      Compress-Archive -Path (Split-Path $env:EXE_PATH)\* -DestinationPath $env:ZIP_NAME
+      $folder = Split-Path $exe.FullName
+      Compress-Archive -Path "$folder\*" -DestinationPath $zipName
+
+      echo "ZIP_NAME=$zipName" >> $env:GITHUB_ENV
 
   - name: Upload Windows ZIP
     uses: actions/upload-artifact@v4
     with:
-      name: ${{ env.ZIP_NAME }}
+      name: KareshiProject-Windows
       path: ${{ env.ZIP_NAME }}
