@@ -1,0 +1,57 @@
+name: Build Android
+
+on: workflow_dispatch: push: branches: [ main ]
+
+jobs: build-android: runs-on: ubuntu-latest
+
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
+
+  - name: Setup Haxe
+    uses: krdlab/setup-haxe@v1
+    with:
+      haxe-version: 4.2.5
+
+  - name: Setup Java (required for Android)
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: 17
+
+  - name: Setup Android SDK
+    uses: android-actions/setup-android@v3
+
+  - name: Setup haxelib
+    run: haxelib setup ~/haxelib
+
+  - name: Install libraries
+    run: |
+      haxelib install lime --quiet
+      haxelib install openfl --quiet
+      haxelib install flixel --quiet
+      haxelib install flixel-addons --quiet
+      haxelib install flixel-ui --quiet
+
+  - name: Lime setup Android
+    run: haxelib run lime setup android
+
+  - name: Build Android (APK Release)
+    run: haxelib run lime build android -release
+
+  - name: Find APK
+    id: find_apk
+    run: |
+      APK_PATH=$(find export -name "*.apk" | head -n 1)
+      if [ -z "$APK_PATH" ]; then
+        echo "No APK found!" >&2
+        exit 1
+      fi
+      echo "APK found at $APK_PATH"
+      echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
+
+  - name: Upload APK artifact
+    uses: actions/upload-artifact@v4
+    with:
+      name: KareshiProject-Android
+      path: ${{ env.APK_PATH }}
